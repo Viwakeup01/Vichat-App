@@ -1,0 +1,241 @@
+📄 ViChat Real-Time Chat App Documentation (Full Stack)
+🔧 Project Stack
+Frontend: React + Vite
+
+Backend: Node.js + Express
+
+Database: MongoDB (via Mongoose)
+
+Real-time: Socket.IO
+
+Styling: TailwindCSS (optional)
+
+Version Control: Git + GitHub
+
+📁 Folder Structure (Simplified)
+bash
+Copy
+Edit
+ViChat/
+├── Chat-backend/
+│   ├── index.js
+│   ├── config/db.js
+│   ├── routes/userRoutes.js
+│   ├── controllers/userController.js
+│   └── ...
+└── chat-frontend/
+    ├── src/
+    │   ├── App.jsx
+    │   ├── socket.js
+    │   └── components/
+    │       ├── Sidebar.jsx
+    │       ├── ChatWindow.jsx
+    │       └── MessageInput.jsx
+
+1️⃣ Backend Setup
+
+✅ MongoDB Connection
+js
+// config/db.js
+const mongoose = require("mongoose");
+
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
+
+
+✅ Express Server (with Socket.IO)
+js
+// index.js
+const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
+const connectDB = require("./config/db");
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: { origin: "http://localhost:5173", credentials: true },
+});
+
+connectDB();
+app.use(express.json());
+
+io.on("connection", (socket) => {
+  console.log("🔌 New client connected");
+
+  socket.on("joinRoom", (roomId) => {
+    socket.join(roomId);
+    console.log(`👥 Joined room: ${roomId}`);
+  });
+
+  socket.on("sendMessage", ({ roomId, message }) => {
+    io.to(roomId).emit("receiveMessage", message);
+  });
+
+  socket.on("disconnect", () => console.log("❌ Client disconnected"));
+});
+
+server.listen(process.env.PORT || 5000, () =>
+  console.log("🚀 Server running")
+);
+
+
+2️⃣ Frontend Setup
+
+✅ socket.js - Global Socket Instance
+js
+// src/socket.js
+import { io } from "socket.io-client";
+const socket = io("http://localhost:5000", {
+  transports: ["websocket"],
+  withCredentials: true,
+});
+export default socket;
+
+
+✅ App.jsx - Central Integration
+jsx
+Copy
+Edit
+// App.jsx
+import React, { useEffect, useState } from "react";
+import socket from "./socket";
+import Sidebar from "./components/Sidebar";
+import ChatWindow from "./components/ChatWindow";
+import MessageInput from "./components/MessageInput";
+
+function App() {
+  const [messages, setMessages] = useState([]);
+  const [messageInput, setMessageInput] = useState("");
+
+  useEffect(() => {
+    socket.emit("joinRoom", "room1");
+    socket.on("receiveMessage", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+    return () => socket.off("receiveMessage");
+  }, []);
+
+  const sendMessage = () => {
+    if (messageInput.trim()) {
+      socket.emit("sendMessage", { roomId: "room1", message: messageInput });
+      setMessageInput("");
+    }
+  };
+
+  return (
+    <div className="flex">
+      <Sidebar />
+      <div className="flex-grow flex flex-col">
+        <ChatWindow messages={messages} />
+        <MessageInput
+          message={messageInput}
+          setMessage={setMessageInput}
+          onSend={sendMessage}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+
+3️⃣ Components
+🪟 ChatWindow.jsx
+jsx
+// components/ChatWindow.jsx
+function ChatWindow({ messages }) {
+  return (
+    <div className="chat-window p-4">
+      {messages.map((msg, i) => (
+        <div key={i} className="p-2 bg-gray-100 my-1 rounded">{msg}</div>
+      ))}
+    </div>
+  );
+}
+export default ChatWindow;
+
+
+⌨️ MessageInput.jsx
+jsx
+Copy
+Edit
+// components/MessageInput.jsx
+function MessageInput({ message, setMessage, onSend }) {
+  return (
+    <div className="p-2 border-t flex">
+      <input
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Type a message"
+        className="flex-grow border p-2 rounded"
+      />
+      <button onClick={onSend} className="ml-2 px-4 bg-blue-500 text-white rounded">
+        Send
+      </button>
+    </div>
+  );
+}
+export default MessageInput;
+
+
+📜 Sidebar.jsx
+jsx
+Copy
+Edit
+// components/Sidebar.jsx
+function Sidebar() {
+  return (
+    <div className="w-64 bg-gray-200 p-4">
+      <h2 className="font-bold text-lg">ViChat</h2>
+      {/* Add chat list or user profile later */}
+    </div>
+  );
+}
+export default Sidebar;
+
+
+🧪 Testing
+To test multi-user chat:
+Open two browser windows/tabs
+
+Open http://localhost:5173
+
+Both should see real-time messages without refresh.
+
+
+📌 Features Built So Far
+Feature	Status ✅
+MongoDB connection	✅
+Express backend setup	✅
+Socket.IO server integration	✅
+Frontend created with Vite	✅
+Global Socket client setup	✅
+Message input & display	✅
+Real-time messaging	✅
+Room-based messaging (room1)	✅
+
+
+🧭 Next Possible Steps
+🔐 Add User Auth (JWT + bcrypt)
+
+💬 Store Messages in MongoDB
+
+🧑‍🤝‍🧑 Support Multiple Chat Rooms / Users
+
+✨ Emoji Picker & Typing Indicator
+
+🌙 Dark Mode Toggle
+
+📱 Make UI fully responsive
+
