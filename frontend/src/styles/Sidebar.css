@@ -1,0 +1,25 @@
+.sidebar {
+  width: 250px;
+  background-color: #2d3748;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.channel-list {
+  list-style: none;
+  padding: 0;
+}
+
+.channel-list li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.channel-list li:hover {
+  background-color: #4a5568;
+}

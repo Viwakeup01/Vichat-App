@@ -1,10 +1,10 @@
-const errorHandler = (err, req, res, next) => {
-    const statusCode = res.statusCode ? res.statusCode : 500;
-    res.status(statusCode).json({
-      message: err.message,
-      stack: process.env.NODE_ENV === "production" ? null : err.stack,
-    });
-  };
-  
-  module.exports = { errorHandler };
+const express = require("express");
+const router = express.Router();
+const { registerUser, loginUser } = require("../controllers/userController");
+
+// Example routes
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+
+module.exports = router;
   

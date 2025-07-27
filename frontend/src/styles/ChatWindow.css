@@ -1,0 +1,14 @@
+.chat-window {
+  flex: 1;
+  padding: 20px;
+  background-color: #f1f1f1;
+  overflow-y: auto;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+}
+
+.no-messages {
+  color: #888;
+}
